@@ -1,0 +1,195 @@
+---
+# The high-level description of your tile.
+# Replace these properties with real values.
+#
+name: tile-generator # By convention lowercase with dashes
+icon_file: resources/brkt_mark_256-01.png
+label: Bracket Computing Stemcell Encryptor
+description: Longer description of the tile's purpose
+# metadata_version: 1.8                 # Optional, defaults to 1.5
+
+# Global defaults (all optional)
+#
+# org: test-org                         # Name of org to create for your apps
+# space: test-space                     # Name of space to create for your apps
+# apply_open_security_group: true       # Apply open security group, default: false
+
+# Specify the packages to be included in your tile.
+# The format of the section to include depends on the type
+# of package you are describing. For fragments of each type
+# that you can copy & paste, see:
+#
+# https://github.com/cf-platform-eng/tile-generator/blob/master/README.md
+#
+packages:
+- name: brkt-cli
+  type: bosh-release
+  label: Bracket StemCell Encryptor    # Package name for use in human-readable labels in OpsManager
+  path: resources/brkt-encryptor.tgz
+  jobs:
+#  - name: brkt-cli
+#    templates:
+#    - name: brkt-cli
+#      release: brkt-encryptor
+#    static_ip: 1
+#    properties:
+#      aws_region: (( .properties.aws_region.value ))
+#      aws_access_key_id: (( .properties.aws_access_key.value ))
+#      aws_secret_access_key: (( .properties.aws_secret_access_key.value ))
+#      password: (( .properties.password.value ))
+#      service_domain: (( .properties.service_domain.value ))
+#      mgmt_url: (( .properties.root_url.value ))
+#      email: (( .properties.email.value ))
+#      bucket_name: (( .properties.bucket_name.value ))
+#      stemcell_url: (( .properties.stemcell_url.value ))
+  - name: brkt-cli
+    templates:
+    - name: brkt-cli
+      release: brkt-encryptor
+    lifecycle: errand
+    post_deploy: true
+    run_post_deploy_errand_default: when-changed
+    memory: 512
+    ephemeral_disk: 4096
+    persistent_disk: 0
+    cpu: 2
+    dynamic_ip: 1
+    properties:
+      aws_region: (( .properties.aws_region.value ))
+      aws_access_key_id: (( .properties.aws_access_key.value ))
+      aws_secret_access_key: (( .properties.aws_secret_access_key.value ))
+      password: (( .properties.password.value ))
+      service_domain: (( .properties.service_domain.value ))
+      mgmt_url: (( .properties.root_url.value ))
+      email: (( .properties.email.value ))
+      bucket_name: (( .properties.bucket_name.value ))
+      stemcell_url: (( .properties.stemcell_url.value ))
+      ops_manager: (( .properties.ops_manager.value ))
+      uaac_token: (( .properties.uaac_token.value ))
+
+# Include stemcell criteria if you don't want to accept the default.
+# Since this stemcell is only used to run pre and post errands, we
+# strongly recommend you leave this alone so that your tile always
+# runs with the latest stemcell.
+#
+# stemcell_criteria:
+#   os: ubuntu-trusty
+#   requires_cpi: false
+#   version: '3062'
+
+# Add properties you want to pass to your applications.
+# Properties specified here will not be configurable by the user.
+#
+properties:
+- name: Bracket_Computing_Encryptor
+  type: string
+  default: specify a value
+  label: Label for the field on the GUI
+#   description: Longer description of the field's purpose
+
+# Uncomment this section if you want to display forms with configurable
+# properties in Ops Manager. These properties will be passed to your
+# applications as environment variables. You can also refer to them
+# elsewhere in this template by using:
+#     (( .properties.<property-name> ))
+# 
+forms:
+- name: bracket_properties
+  label: Bracket
+  description: Bracket_properties
+  properties:
+   - name: email
+     type: string
+     label: Customer_Email
+     description: Email used for login to Bracket services
+     optional: false
+   - name: password
+     type: secret
+     label: Password
+     description: Password used for login to Bracket services
+     optional: false
+   - name: root_url
+     type: string
+     label: Root_url
+     default: 'https://api.mgmt.brkt.com'
+     description: Bracket service root URL
+     optional: false
+   - name: service_domain
+     type: string
+     label: Service_domain
+     default: 'mgmt.brkt.com'
+     description: Bracket service domain
+     optional: false
+   - name: stemcell_url
+     type: string
+     label: Stemcell_url
+     default: 'https://s3.amazonaws.com/bosh-aws-light-stemcells/light-bosh-stemcell-3445.7-aws-xen-hvm-ubuntu-trusty-go_agent.tgz'
+     description: Source Stemcell URL
+     optional: false
+   - name: aws_access_key
+     type: string
+     label: Aws_access_key
+     description: AWS Access Key ID
+     optional: false
+   - name: aws_secret_access_key
+     type: secret
+     label: Aws_secret_access_key
+     description: AWS Secret Access Key ID
+     optional: false
+   - name: bucket_name
+     type: string
+     label: Bucket_name
+     description: AWS bucket for storing encrypted stemcells
+     optional: false
+     default: brkt-stemcells
+   - name: aws_region
+     label: AWS Region
+     type: dropdown_select
+     configurable: true
+     default: us-east-1
+     options:
+       - name: us-east-1
+         label: 'us-east-1'
+       - name: us-east-2
+         label: 'us-east-2'
+       - name: us-west-1
+         label: 'us-west-1'
+       - name: us-west-2
+         label: 'us-west-2'
+   - name: ops_manager
+     label: OPS Manager
+     type: string
+     label: Ops_Manager
+     description: Hostname or IP address of Ops Manager
+     optional: true
+   - name: uaac_token
+     label: UAAC Token
+     type: secret
+     label: Uaac_token
+     description: Ops Manager UAAC API Token
+     optional: true
+
+# Add any dependencies your tile has on other installed products.
+# This is often appropriate when using automatic service provisioning
+# for any of your packages above, with services provided by other
+# products.
+#
+# requires_product_versions:
+# - name: p-mysql
+#   version: '~> 1.7'
+
+# Customize upgrade parameters if the defaults don't meet your needs.
+#
+# update:
+#   canaries: 1
+#   canary_watch_time: 10000-100000
+#   max_in_flight: 1
+#   update_watch_time: 10000-100000
+
+# If prior versions of your tile are installed and configured, their
+# property values will not be overwritten by new defaults provided
+# in this file. If that is your intent, you must do the overwriting
+# explicitly using JavaScript migration functions, like so:
+#
+# migration: |
+#   properties['properties']['.properties.org']['value'] = 'system';
